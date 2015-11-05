@@ -1,0 +1,376 @@
+<h4>Goal</h4>
+
+Using NetSim, a simple network simulator, develop and experiment with
+distance-vector and link-state routing protocols.
+
+<h4>Useful links</h4>
+
+<ul>
+
+<a href="lab9_net.py">lab9_net.py</a> -- Network and related classes<br/>
+<a href="lab9_router.py">lab9_router.py</a> -- Router class<br/>
+<a href="lab9_random_graph.py">lab9_random_graph.py</a> -- a random topology generator<br/>                                
+<a href="lab9_dv.py">lab9_dv.py</a> -- template file for Task #1 (Distance Vector routing)<br/>
+<a href="lab9_ls.py">lab9_ls.py</a> -- template file for Task #2 (link state routing)<br/>
+<a href="lab9.tgz">lab9.tgz</a> -- compressed tarball of all these files<br/>
+
+</ul>
+
+<h4>Instructions</h4>
+
+See Lab #1 for a longer narrative about lab mechanics. The one-sentence
+version:
+
+<p>Complete the tasks below, submit your task files on-line before the
+deadline, and complete your check-off interview within a week of the
+file submission deadline.
+
+<p>As always, help is available in 32-083 (see the Lab Hours web page).
+
+<p>For this lab, you will need wxPython (2.8.x), which has already
+been installed on the athena machines.  To install it on your
+computer, visit
+<a href=http://www.wxpython.org/>http://www.wxpython.org/</a>
+
+<hr>
+
+<h4>Introduction and preliminaries</h4>
+
+This lab uses NetSim, a simple packet-level network simulator.  You
+will write the code for the main components of distance-vector and
+link-state routing protocols.  
+
+NetSim executes a set of steps every time slot; time increments by 1
+each slot.  During each time slot a link can deliver one packet from
+source of the link to the destination of the link.
+
+<p>You can run the python programs for this lab using ipython or
+  python (ipython602 and python602 on the athena machines).  The lab
+  will not work in IDLE.
+
+<p>To understand the different parameters one can set in NetSim, go to a
+shell and enter:
+
+<p><tt># python lab8_dv.py -h</tt>
+
+<p>
+(Or, in ipython, run <tt>lab8_dv.py -h</tt>)
+
+<p>
+This command prints out the various options:
+
+<p>
+<tt>
+  -n NUMNODES, --numnodes=NUMNODES<br>
+  -t SIMTIME, --simtime=SIMTIME<br>
+  -r, --rand
+</tt>
+
+<p>The "-r" option generates a random topology with the specified
+  number of nodes (the default number of nodes is 12 and the default
+  simulation time is 2000 time slots).
+
+<p>
+This lab has two main tasks, each with a few sub-tasks.  The first
+task is to implement a distance-vector (DV) routing protocol.  The
+second task is to implement a link-state (LS) routing protocol.  You
+will test these implementations on a few different topologies that
+will be generated when you run the corresponding task files.
+
+Both routing protocols should construct the <b>minimum cost path</b>
+from the Router to all the other destination addresses that are
+currently reachable in the network.  The "destination" itself is
+derived from the Router class and has an "address" field that will be
+used as an index into the routing table and the cost table.  Unless
+explicitly mentioned otherwise, we will use the term "minimum-cost
+path" and "shortest path" interchangeably,
+
+<p>
+<b>Useful classes and data structures</b>
+
+<ul>
+<b>The Router class:</b> The logic for DV resides in the DVRouter class,
+while the logic for LS is in the LSRouter class.  Both these classes
+are derived from the Router class.  The main goal of your software is
+to construct and maintain two key pieces of information in the
+DVRouter and LSRouter classes: the routing table and the cost of the
+minimum-cost path from the Router to the other destination addresses.
+
+<ul>
+
+<li><tt>self.routes</tt>, the routing table: A dictionary that maps from a
+  destination address to a link.  This link is the link that the
+  Router will use to forward any packet destined for the corresponding
+  destination address.
+
+<li><tt>self.spcost</tt>, the table of costs of the shortest (i.e., minimum
+  cost) paths: A dictionary that maps from a destination address to
+  the current estimate of the cost of the path to get there.
+
+</ul>
+
+<p>
+<b>The Link class:</b> This class is defined in lab9_net.py; you don't
+need to modify this class, and the main fact you should know for this
+lab is that you can obtain the cost of a link, l, using l.cost (a
+variable in class Link).  The other place you'll use the Link class is
+to populate the routing table, which (by definition) stores the Link
+to be used to reach any destination.  We have provided a useful
+function in the Router class, <tt>getlink(n)</tt>, which takes a
+neighboring Router, <tt>n</tt>, and returns the Link
+connecting <tt>self</tt> to <tt>n</tt>.  This function is useful in
+constructing the routing table.
+
+</ul>
+
+<p>
+<b>The HELLO protocol and maintaining live neighbors</b>
+
+<p>The HELLO protocol has already been implemented for you in
+  lab9_router.py (you should not need to modify this file); each
+  Router sends a <tt>HELLO</tt> packet every <tt>HELLO_INTERVAL</tt>
+  time slots (10 by default in NetSim).  Whenever a node hears
+  a <tt>HELLO</tt> along a link, it adds the current time, the address
+  of the Router at the other end of the link, and the cost of that
+  link, to <tt>self.neighbors</tt>, which is a dictionary mapping a
+  Link to a (<tt>timestamp, address, linkcost</tt>) tuple.
+
+<p> If a node does not hear a <tt>HELLO</tt> for more
+  than <tt>2*HELLO_INTERVAL</tt> time slots on a link, it removes that
+  node from <tt>self.neighbors</tt> and calls the
+  Router's <tt>link_failed(link)</tt> function, giving the "failed"
+  link as argument.  In response, the routing protocol <i>may</i> take
+  suitable actions.
+
+<hr>
+
+<h4>Debugging and Testing Procedures</h4>
+
+Writing distributed protocols, even in simulation, can be a challenge.
+To help you a bit, we have some utilities that are accessible via the
+GUI.  Clicking on any node while the simulation is running enables you
+to look at its routes and shortest path costs to every destination.
+For link-state routing, clicking on a node also prints out the last
+LSA information available at that node from each of the other nodes.
+
+<p>For simple topologies, eye-balling these routes and the printed
+state at several nodes in the network should convince you of the
+health of your routing protocol implementation. 
+
+<p>Please note that clicking on any link toggles the state of the link
+between "working" and "failed" states, thereby letting you test your
+protocol under link failures.  We will want to ensure that your
+  protocol works properly in the face of failures and recoveries.
+
+<p>The "Step 1", "Step 10", and "Step 100" buttons are the way in
+  which you should step through the operation of your protocol and see
+  what is happening by clicking on various nodes.  (The GUI also
+  provides a "play" and "step all" buttons, which aren't particularly
+  useful for debugging.)
+
+<p>In any given time-slot, colored squares may appear on a link.
+  These are packets.  The packets are color-coded: green ones are
+  HELLO packets, red are advertisements (type ADVERT), and blue are
+  data packets.  (The data packets aren't relevant to this lab.)
+
+<p>For both the routing protocols you will implement in this lab, you
+should demonstrate the correctness of the routing tables at the
+various nodes in the following scenarios (on any random topology)
+during the checkoff interview.
+
+<ul>
+
+<li><b>No link failures</b>. You must verify that
+all routes computed at the various nodes actually correspond to the
+shortest paths in the graph. In addition, every node must have a
+routing table entry for all other nodes in the topology.
+
+<li><b>One or more link failures, but a connected network</b>. The
+routing protocol should be able to adjust its routes to route packets
+"around" the failed link. You should be able to give a rough estimate
+of how long link state and distance vector protocols take to find the
+new routes. You should also try bringing the failed link back up and
+verify that the routes go back to what they looked like in the base
+case.
+
+<li><b>Disconnected topology</b>.  Break enough links in the topology
+such that some subset of the nodes cannot reach the other subset. You
+must show that your routing protocol eventually converges to the
+correct routing in this case -- that is, a node must have a routing
+table entry to every node it is connected to by a path in the
+underlying topology, and must not have a routing table entry for any
+node it cannot reach.  You should also be able to provide a rough
+estimate of how long this convergence process lasts for the two
+routing protocols. In the case of distance vector routing, you should
+also be able to demonstrate the "count to infinity" problem during
+convergence.  Finally, when you "heal" one or more links to produce a
+connected toplogy, the protocol should eventually ensure that all
+nodes find the correct routes to all destinations.
+
+</ul>
+
+Each task below is worth 5 points; in each case, 2 points each for the
+first two scenarios mentioned above (no failures and one or more
+failures), and 1 point for the third case (disconnection).
+
+<hr>
+
+<h4>Task #1: Distance vector (DV) routing (5 points)</h4>
+
+The file you will have to extend is <b><tt>lab9_dv.py</tt></b>.  This
+file contains the <tt>DVRouter</tt> class, which is derived from
+the <tt>Router</tt> class (which in turn derives from
+the <tt>Node</tt> class defined in <tt>lab9_net.py</tt>.  Your first
+task for this lab is to write the following <u>three</u> functions,
+which are the core of any DV protocol:
+<ol>
+
+<li><b><tt>make_dv_advertisement()</tt>:</b> Scan
+  the <tt>self.routes</tt> and <tt>self.spcost</tt> tables and
+  construct a list of <tt>[(dest1, cost1), (dest2, cost2) ...]</tt>.  Return
+  this list.
+
+<p>As explained in lecture and the lecture notes, each router in a DV
+protocol periodically exchanges <b>routing advertisements</b> with its
+neighbors in the network topology, containing the information about
+destinations and their shortest-path costs (<tt>[(dest1,cost1), (dest2,cost2),
+ ...]</tt>).  This function will be called
+every <tt>ADVERT_INTERVAL</tt> time slots (50 by default in NetSim) by
+<tt>send_advertisement()</tt>, which will take care of constructing
+packets with this list as its contents, and sending one such packet to
+each neighbor in the topology.
+
+<li><b><tt>link_failed(link)</tt>:</b> Called when the HELLO protocol
+determines a failure.  When called, your code needs to take suitable
+action to recognize that the link is now "dead".  For example,
+depending on how you design your DV protocol, you may: set self.spcost
+for all destinations whose routing table entries currently use that
+link to infinity, delete that route from your table, or anything else.
+
+<p>We are intentionally not specifying the precise behavior, leaving
+it to you to design it.  As long as what you do in this step is
+consistent with what you do in <tt>make_dv_advertisement()</tt>, your
+protocol will work correctly.  Conversely, an inconsistency will
+likely cause the protocol to be incorrect.
+
+<li><b><tt>integrate(fromnode, adv)</tt>:</b> This function is where
+  the actual distributed computation occurs.  It takes as input two
+  arguments: the node from which the advertisement came
+  (<tt>fromnode</tt>), and the advertisement itself (adv), which you
+  constructed as a list in make_dv_advertisement.  (You can ignore the
+  marshalling of the advertisement into a packet and the corresponding
+  unmarshalling back to the list, but if you're curious, you can see
+  how send_advertisement() and process_advertisement() do these
+  tasks.)
+
+<p>The result of <tt>integrate()</tt> is the
+  current <tt>self.routes</tt> and <tt>self.spcost</tt> tables, which
+  as mentioned before, are the routing table and table of shortest
+  path costs.  The underlying rule you should use is the Bellman-Ford
+  update rule, as described in lecture.
+
+<p>Depending on how you design your DV protocol, you may have to take
+  care of one subtle (but important) issue in <tt>integrate()</tt>: if
+  you find that a previous advertisement that came
+  from <tt>fromnode</tt> contained a destination, and you are using
+  the corresponding link as the route to the destination, and the
+  current advertisement <b>does not</b> mention the destination, then
+  you have to assume that the destination is <b>no longer reachable
+  via <tt>fromnode</tt></b>.  Otherwise, it is likely that your
+  protocol may not be correct.  You should also note that not every
+  design requires this check; it all boils down to how you send your
+  routing advertisements.
+
+</ol>
+
+<hr>
+
+<h4>Task #2: Link-state (LS) routing (5 points)</h4>
+
+The LS protocol uses the <tt>LSRouter</tt> class, which is derived
+from the
+<tt>Router</tt> class.  The <tt>self.routes</tt>
+and <tt>self.spcost</tt> tables are identical to the DV case.
+The <tt>LSRouter</tt> class adds two new variables to Router:
+
+<ul>
+<li><tt>self.LSA</tt>, a dictionary that maps a Router address to a
+  list <tt>[seqnum, (n1,c1), (n2,c2) (n3,c3), ...]</tt>, where the Router
+  address is the <b>originator</b> of the link-state advertisement
+  (LSA), <tt>seqnum</tt> is the current sequence number of the LSA
+  from that node, and the <tt>(n_i,c_i)</tt> tuples are the currently
+  live neighbor address and link cost from the LSRouter sending the
+  LSA.  Note that this LSA does not have a "origin_address" field; we
+  simply get that from the source field in the packet, and you don't
+  need to worry about it (in practice, implementations will explicitly
+  include such a field in the LSA).
+
+<p><tt>self.LSA.get(u)</tt> returns the last LSA update originating
+  from Router <tt>u</tt> that this Router (<tt>self</tt>) knows about.
+  It has the format <tt>[seqnum, (n1,c1), (n2,c2), ...]</tt> where
+  <tt>seqnum</tt> is the sequence number at <tt>u</tt> when it originated the LSA
+  and each <tt>n_i</tt> is a neighbor of <tt>u</tt>
+  (that <tt>u</tt>'s <tt>HELLO</tt> protocol considered to be "live"
+  when it generated the LSA numbered <tt>seqnum</tt>), and <tt>c_i</tt> is the cost of the
+  link from <tt>u</tt> to <tt>n_i</tt>.
+
+<li><tt>self.LSA_seqnum</tt>, which is the sequence number for the LSA
+  generated by the Router.  It increments by 1 on each successive
+  advertisement.
+
+</ul>
+
+<p>The details of how an LS protocol works were described in the
+lecture and are in the lecture notes.  Each Router periodically sends
+its currenly live links (which we maintain in
+the <tt>self.neighbors</tt> dictionary, as explained earlier when we
+discussed the HELLO protocol).  Each Router also <b>re-broadcasts</b>,
+along all its links, an LSA packet that it receives via a neighboring
+Router, containing an LSA originating at some other Router.  This
+re-broadcast is done only once per LSA; to ensure this property, the
+Router checks the sequence number of the incoming LSA to make sure
+that it is larger than the last LSA heard from that originating
+Router.  These periodic LSA broadcasts are done
+every <tt>ADVERT_INTERVAL</tt> time slots (50 by default in NetSim); the
+re-broadcasts are done when a Router receives a new LSA (using the
+sequence number check).
+
+<p>
+For this task, the file you will have to extend
+is <b><tt>lab9_ls.py</tt></b> -- your task is to write the following
+<u>two</u> functions, which are the core of any LS protocol:
+<ol>
+
+<li><b><tt>make_ls_advertisement()</tt>:</b> consult the list of neighbors,
+<tt>self.neighbors</tt>, that are currently "live" and return a list
+of <tt>[(neighbor1,linkcost1), (neighbor2,linkcost2), (neighbor3,linkcost3),
+...]</tt>.  This function is called by <tt>send_lsa</tt>, which
+marshalls this LSA into the packets, and then sends one packet each
+along each link.
+
+<p>Note that the <tt>self.neighbors</tt> dictionary mapping
+a <tt>Link</tt> to a (<tt>timestamp, address, linkcost</tt>) tuple
+will be useful in constructing the LSA; as mentioned above in the
+discussion of the <tt>HELLO</tt> protocol, <tt>neighbors</tt> keeps track of currently
+"live" neighboring Routers.
+
+<li><b><tt>run_dijkstra(nodes)</tt>:</b> Use Dijkstra's algorithm to
+produce <tt>self.routes[dest]</tt> for all <tt>dest</tt>
+in <tt>nodes</tt>, as well as <tt>self.spcost[dest]</tt>.  The
+topology information for the network (graph) is available in
+the <tt>self.LSA</tt>, whose format was described above.  The set of
+<tt>nodes</tt> currently reachable from the Router is passed as the
+argument to <tt>run_dijkstra()</tt>.
+
+<p>There is one important issue that you need to watch out for in the
+  steps of <tt>run_dijkstra()</tt> that will set the routing table
+  entries, <tt>self.routes</tt>, for various destinations.  At the
+  Router, as you go through the different destinations in
+  non-decreasing order of shortest-path costs and set the route to a
+  node to be that of its parent in the shortest path tree.  If the
+  parent is <tt>self.address</tt> (i.e., the Router running the
+  algorithm), then you should remember to set the route to the link
+  connecting the Router (<tt>self</tt>) to the destination.  You can
+  use the <tt>self.getlink()</tt> method for this purpose.
+
+</li>
