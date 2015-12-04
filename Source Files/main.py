@@ -13,13 +13,19 @@ import string
 #GLOBAL VARS
 TABLE = []
 CONNECTED = []
-HOST = []
+DISTANCE = [[0, 1, 2, 999, 999],
+            [1, 0, 3, 999, 5],
+            [2, 3, 0, 4, 7],
+            [999, 999, 4, 0, 6],
+            [999, 5, 7, 6, 0]]
 
 def init():
     """
     Initialize by prompting user for # of nodes in set and to set IP addresses
     Then create the initial routing table using the DVR algorithm
     """
+
+    
     nodes = 1
     while nodes not in range(2, 6):
         nodes = int(input("Enter the number of nodes joining Network from 2 to 5: "));
@@ -38,6 +44,15 @@ def init():
     print "================\n"
     
     CreateTable(addressList)
+
+    CreateHostTable()
+    
+def CreateHostTable():
+
+    pos = 1
+    for node in TABLE:
+        if HOST[0] == node[0]:
+            print "\nSelected Host: ", node[0]
     
 def IdentifySelf(hosts_):
     """
@@ -49,6 +64,7 @@ def IdentifySelf(hosts_):
     4. 192.168.1.4
     5. 192.168.1.5
     """
+    global HOST
 
     identifiedHost = 0
     while identifiedHost not in range(1, len(hosts_)+1):
