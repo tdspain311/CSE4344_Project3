@@ -13,6 +13,7 @@ import string
 #GLOBAL VARS
 TABLE = []
 CONNECTED = []
+HOST = []
 
 def init():
     """
@@ -22,19 +23,50 @@ def init():
     nodes = 1
     while nodes not in range(2, 6):
         nodes = int(input("Enter the number of nodes joining Network from 2 to 5: "));
-        if (nodes not in range(2, 6)):
+        if nodes not in range(2, 6):
             print "Number must be between 2 and 5"
         
 
-    # Save IP address into list
-    addressList = getIP(nodes)
+    #Save IP address into list
+    addressList = GetIP(nodes)
 
-    print "\n\n::INITIALIZING::"
+    #Set the HOST ip by prompting client
+    IdentifySelf(addressList)
+
+    print "\n\n================"
+    print "::INITIALIZING::"
+    print "================\n"
     
     CreateTable(addressList)
     
+def IdentifySelf(hosts_):
+    """
+    Prompt User with list to Identify itself in the network
+    ex.
+    1. 192.168.1.1
+    2. 192.168.1.2
+    3. 192.168.1.3
+    4. 192.168.1.4
+    5. 192.168.1.5
+    """
 
-def CreateTable(addr):
+    identifiedHost = 0
+    while identifiedHost not in range(1, len(hosts_)+1):
+        i = 1
+        print "\n"
+        for host in hosts_:
+            print "{hid}. {hip}".format(hid=i, hip=host)
+            i += 1
+        print "\n"
+        identifiedHost = int(input("Select your local host: "));
+        if identifiedHost not in range(1, len(hosts_)+1):
+            print "Number must be between 1 and 5"
+        else:
+            HOST = [hosts_[identifiedHost-1]]
+    
+    
+
+def CreateTable(addr_):
     """
     Create the initial table here with the full list of addresses and distances
     Default configurating for nodes will be implemented by:
@@ -65,11 +97,11 @@ def CreateTable(addr):
 
     """
     #init all node data cells to 'inifinity' in table
-    for node in addr:
+    for node in addr_:
         nodeData = [node]
         initData = []
         i = 0
-        while (i < len(addr)):
+        while (i < len(addr_)):
             initData.append(999)
             i += 1
         nodeData.extend(initData)
@@ -180,10 +212,10 @@ def PrintFormatedTable():
         row.extend(TABLE[node][1:])
         print fmtNode.format(*row)
     
-def getIP(n):
+def GetIP(numNodes_):
     i = 1
     ipList = []
-    while ( i <= n ):
+    while ( i <= numNodes_ ):
         ip = raw_input("Enter IP Address of host %d: " %i) 
         ipList.append(ip)
         i += 1
