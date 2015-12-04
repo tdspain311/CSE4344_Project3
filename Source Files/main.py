@@ -46,13 +46,77 @@ def init():
     CreateTable(addressList)
 
     CreateHostTable()
+
+    finalTable1 = DVR_init_(0)
+    finalTable2 = DVR_init_(1)
+    finalTable3 = DVR_init_(2)
+    finalTable4 = DVR_init_(3)
+    finalTable5 = DVR_init_(4)
+
+    temp = []
+    temp = addressList[0]
+
+        
+    result = [finalTable1[1], finalTable2[1], finalTable3[1], finalTable4[1], finalTable5[1]]
+    result2 = [finalTable1[0], finalTable2[0], finalTable3[0], finalTable4[0], finalTable5[0]]
+
     
+    print result
+    print result2
+
+def DVR_init_(source):
+    # auxiliary constants
+    DISTANCE
+    SIZE = len( DISTANCE )
+    EVE = -1; # to indicate no predecessor
+    INFINITY = 999
+
+    # declare and initialize pred to EVE and minDist to INFINITY
+    pred = [EVE] * SIZE
+    minDist = [INFINITY] * SIZE
+
+    # set minDist[source] = 0 because source is 0 distance from itself.
+    minDist[source] = 0
+
+    # relax the edge set V-1 times to find all shortest paths
+    for i in range( 1, SIZE - 1 ):
+      for v in range( SIZE ):
+        for x in Adjacency( DISTANCE, v ):
+          if minDist[x] > minDist[v] + DISTANCE[v][x]:
+            minDist[x] = minDist[v] + DISTANCE[v][x]
+            #print minDist, v
+            pred[x] = v
+            
+
+
+    # detect cycles if any
+    for v in range( SIZE ):
+      for x in Adjacency( DISTANCE, v ):
+        if minDist[x] > minDist[v] + DISTANCE[v][x]:
+          raise Exception( "Negative cycle found" )
+
+    
+    #return [pred, minDist]
+    #print([pred, minDist])
+    #return [pred, minDist]
+    return [pred, minDist]
+
+def Adjacency(G, v):
+    result = []
+    for x in range( len( G ) ):
+      if G[v][x] is not 'X':
+        result.append( x )
+
+    return result
+
 def CreateHostTable():
 
     pos = 1
     for node in TABLE:
         if HOST[0] == node[0]:
             print "\nSelected Host: ", node[0]
+
+    print "\n"
     
 def IdentifySelf(hosts_):
     """
