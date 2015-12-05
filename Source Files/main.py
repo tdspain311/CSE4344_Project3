@@ -9,6 +9,7 @@ References: Page 371-379 from the book
 """
 import random
 import string
+import time
 
 #GLOBAL VARS
 TABLE = []
@@ -49,9 +50,13 @@ def init():
 
     
     finalTable1 = DVR_init_(addressList[0], 0)
+    time.sleep(1)
     finalTable2 = DVR_init_(addressList[1], 1)
+    time.sleep(1)
     finalTable3 = DVR_init_(addressList[2], 2)
+    time.sleep(1)
     finalTable4 = DVR_init_(addressList[3], 3)
+    time.sleep(1)
     finalTable5 = DVR_init_(addressList[4], 4)
 
     #temp = []
@@ -64,13 +69,19 @@ def init():
     #TABLE = result
     #print TABLE
 
-    print "Index Table"
+    print "\nIndex Table"
+    print "====================================="
     PrintFormatedTable(result2)
 
     print "\nCompleted Table"
+    print "====================================="
     PrintFormatedTable(result)
 
 def DVR_init_(addr_, source):
+
+    print "\n\n================"
+    print "::BUILDING TABLE::"
+    print "================\n"
     # auxiliary constants
     DISTANCE
     SIZE = len( DISTANCE )
@@ -89,26 +100,24 @@ def DVR_init_(addr_, source):
     minDist[source+1] = 0
 
     # relax the edge set V-1 times to find all shortest paths
+    print("\n\nRouting Table for Node %c" %string.ascii_uppercase[source])
+    print("Next Hop \t\t Table   ")
+    print("=====================================")
     for i in range( 1, SIZE - 1 ):
       for v in range( SIZE ):
         for x in Adjacency( DISTANCE, v ):
           if minDist[x+1] > minDist[v+1] + DISTANCE[v][x]:
             minDist[x+1] = minDist[v+1] + DISTANCE[v][x]
-            #print minDist, v
             pred[x+1] = v
+            print "next hop = ", x, "\t", minDist
+            time.sleep(2)
             
-
-
     # detect cycles if any
     for v in range( SIZE ):
       for x in Adjacency( DISTANCE, v ):
         if minDist[x+1] > minDist[v+1] + DISTANCE[v][x]:
           raise Exception( "Negative cycle found" )
 
-    
-    #return [pred, minDist]
-    #print([pred, minDist])
-    #return [pred, minDist]
     return [pred, minDist]
 
 def Adjacency(G, v):
