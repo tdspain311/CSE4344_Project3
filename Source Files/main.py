@@ -9,6 +9,7 @@ References: Page 371-379 from the book
 """
 import random
 import string
+import time
 
 #GLOBAL VARS
 TABLE = []
@@ -47,24 +48,40 @@ def init():
 
     CreateHostTable()
 
-    finalTable1 = DVR_init_(0)
-    finalTable2 = DVR_init_(1)
-    finalTable3 = DVR_init_(2)
-    finalTable4 = DVR_init_(3)
-    finalTable5 = DVR_init_(4)
+    
+    finalTable1 = DVR_init_(addressList[0], 0)
+    time.sleep(1)
+    finalTable2 = DVR_init_(addressList[1], 1)
+    time.sleep(1)
+    finalTable3 = DVR_init_(addressList[2], 2)
+    time.sleep(1)
+    finalTable4 = DVR_init_(addressList[3], 3)
+    time.sleep(1)
+    finalTable5 = DVR_init_(addressList[4], 4)
 
-    temp = []
-    temp = addressList[0]
+    #temp = []
+    #temp = addressList[0]
 
         
     result = [finalTable1[1], finalTable2[1], finalTable3[1], finalTable4[1], finalTable5[1]]
     result2 = [finalTable1[0], finalTable2[0], finalTable3[0], finalTable4[0], finalTable5[0]]
 
-    
-    print result
-    print result2
+    #TABLE = result
+    #print TABLE
 
-def DVR_init_(source):
+    print "\nIndex Table"
+    print "====================================="
+    PrintFormatedTable(result2)
+
+    print "\nCompleted Table"
+    print "====================================="
+    PrintFormatedTable(result)
+
+def DVR_init_(addr_, source):
+
+    print "\n\n================"
+    print "::BUILDING TABLE::"
+    print "================\n"
     # auxiliary constants
     DISTANCE
     SIZE = len( DISTANCE )
@@ -72,33 +89,35 @@ def DVR_init_(source):
     INFINITY = 999
 
     # declare and initialize pred to EVE and minDist to INFINITY
-    pred = [EVE] * SIZE
-    minDist = [INFINITY] * SIZE
+    pred = [addr_]
+    temp = [EVE] * SIZE
+    pred.extend(temp)
+    minDist = [addr_]
+    temp = [INFINITY] * SIZE
+    minDist.extend(temp)
 
     # set minDist[source] = 0 because source is 0 distance from itself.
-    minDist[source] = 0
+    minDist[source+1] = 0
 
     # relax the edge set V-1 times to find all shortest paths
+    print("\n\nRouting Table for Node %c" %string.ascii_uppercase[source])
+    print("Next Hop \t\t Table   ")
+    print("=====================================")
     for i in range( 1, SIZE - 1 ):
       for v in range( SIZE ):
         for x in Adjacency( DISTANCE, v ):
-          if minDist[x] > minDist[v] + DISTANCE[v][x]:
-            minDist[x] = minDist[v] + DISTANCE[v][x]
-            #print minDist, v
-            pred[x] = v
+          if minDist[x+1] > minDist[v+1] + DISTANCE[v][x]:
+            minDist[x+1] = minDist[v+1] + DISTANCE[v][x]
+            pred[x+1] = v
+            print "next hop = ", x, "\t", minDist
+            time.sleep(2)
             
-
-
     # detect cycles if any
     for v in range( SIZE ):
       for x in Adjacency( DISTANCE, v ):
-        if minDist[x] > minDist[v] + DISTANCE[v][x]:
+        if minDist[x+1] > minDist[v+1] + DISTANCE[v][x]:
           raise Exception( "Negative cycle found" )
 
-    
-    #return [pred, minDist]
-    #print([pred, minDist])
-    #return [pred, minDist]
     return [pred, minDist]
 
 def Adjacency(G, v):
@@ -191,7 +210,7 @@ def CreateTable(addr_):
     ConnectedNodes()
 
     #Print the Current IP Table and Node Table
-    PrintFormatedTable()
+    PrintFormatedTable(TABLE)
 
 def ConnectedNodes():
     """
@@ -242,7 +261,7 @@ def ConnectedNodes():
 
     print "\n"
 
-def PrintFormatedTable():
+def PrintFormatedTable(t):
     """
     ex.
     IP Table
@@ -267,29 +286,29 @@ def PrintFormatedTable():
     print "IP Table"
     print fmtIP.format('Node', 'IP ADDRESS')
 
-    for ipData in range(len(TABLE)):
+    for ipData in range(len(t)):
         node = string.ascii_uppercase[ipData]
-        ip = TABLE[ipData][0]
+        ip = t[ipData][0]
         print fmtIP.format(node, ip)
 
     print "\n"
     print "Node Table"
-    if (len(TABLE) == 2):
+    if (len(t) == 2):
         fmtNode = "||{0:^9}|{1:^9}|{2:^9}||"
         print fmtNode.format('Node', 'A', 'B')
-    elif (len(TABLE) == 3):
+    elif (len(t) == 3):
         fmtNode = "||{0:^9}|{1:^9}|{2:^9}|{3:^9}||"
         print fmtNode.format('Node', 'A', 'B', 'C')
-    elif (len(TABLE) == 4):
+    elif (len(t) == 4):
         fmtNode = "||{0:^9}|{1:^9}|{2:^9}|{3:^9}|{4:^9}||"
         print fmtNode.format('Node', 'A', 'B', 'C', 'D')
-    elif (len(TABLE) == 5):
+    elif (len(t) == 5):
         fmtNode = "||{0:^9}|{1:^9}|{2:^9}|{3:^9}|{4:^9}|{5:^9}||"
         print fmtNode.format('Node', 'A', 'B', 'C', 'D', 'E')
 
-    for node in range(len(TABLE)):
+    for node in range(len(t)):
         row = [string.ascii_uppercase[node]]
-        row.extend(TABLE[node][1:])
+        row.extend(t[node][1:])
         print fmtNode.format(*row)
     
 def GetIP(numNodes_):
