@@ -1,88 +1,57 @@
-#
-#
-#   Node Table
-#     ||  NODE  |   A   |   B   |   C   |   D   |   E   ||
-#     ||   A    |   0   |   1   |   2   |  999  |  999  ||
-#     ||   B    |   1   |   0   |   3   |  999  |   5   ||
-#     ||   C    |   2   |   3   |   0   |   4   |   7   ||
-#     ||   D    |  999  |  999  |   4   |   0   |   6   ||
-#     ||   E    |  999  |   5   |   7   |   6   |   0   ||
-#
-# master_table = [[0, 1, 2, 999, 999],
-#                 [1, 0, 3, 999, 5],
-#                 [2, 3, 0, 4, 7],
-#                 [999, 999, 4, 0, 6],
-#                 [999, 5, 7, 6, 0]]
-#
-# nodes = [A, B, C, D, E]
-# # every 30 seconds each node updates the table
-#
-# for each_node in nodes:
-
 
 from sys import maxint
-class BellmanFord( object ):
+import time
+import threading
 
-  def __init__( self ):
-      '''
-      Constructor
-      '''
-
-  def singleSourceShortestPath( self, weight, source ) :
+def bellman_ford(weight, source) :
     # auxiliary constants
     SIZE = len( weight )
-    EVE = -1; # to indicate no predecessor
+    EVE = -1 # to indicate no predecessor
     INFINITY = maxint
 
     # declare and initialize pred to EVE and minDist to INFINITY
     pred = [EVE] * SIZE
     minDist = [INFINITY] * SIZE
+    table1, table2, table3, table4, table5 = [], [], [], [], []
 
     # set minDist[source] = 0 because source is 0 distance from itself.
     minDist[source] = 0
 
     # relax the edge set V-1 times to find all shortest paths
+    print("\n\nRouting Table for Node %d" % source)
+    print("Next Hop \t\t Table   ")
+    print("=====================================")
     for i in range( 1, SIZE - 1 ):
       for v in range( SIZE ):
-        for x in self.adjacency( weight, v ):
+        for x in adjacency( weight, v ):
           if minDist[x] > minDist[v] + weight[v][x]:
             minDist[x] = minDist[v] + weight[v][x]
-            print minDist, v
             pred[x] = v
-      print "\n"
-
+            print "next hop = ", x, "\t", minDist
+            time.sleep(2)
 
     # detect cycles if any
-    for v in range( SIZE ):
-      for x in self.adjacency( weight, v ):
+    for v in range(SIZE):
+      for x in adjacency( weight, v ):
         if minDist[x] > minDist[v] + weight[v][x]:
-          raise Exception( "Negative cycle found" )
-
-
-    #return [pred, minDist]
-    #print([pred, minDist])
-    # return [pred, minDist]
+          raise Exception("Negative cycle found" )
     return [pred, minDist]
-  #=====================================================================
-  # Retrieve all the neighbors of vertex v.
-  #=====================================================================
-  def adjacency( self, G, v ) :
-    result = []
-    for x in range( len( G ) ):
-      if G[v][x] is not None:
-        result.append( x )
 
+
+def adjacency(G, v):
+    result = []
+    for x in range(len(G)):
+        if G[v][x] is not None:
+            result.append(x)
     return result
 
-
-weight = [
-      [None, 10, None, None, 3],
-      [None, None, 2, None, 1],
-      [None, None, None, 7, None],
-      [None, None, 9, None, None],
-      [None, 4, 8, 2, None]
-    ]
-
+"""
+    A -2- C -4- D
+    |    /|   /
+    1  3  7  6
+    | /   | /
+    B -5- E
+"""
 master_table = [[0, 1, 2, None, None],
                 [1, 0, 3, None, 5],
                 [2, 3, 0, 4, 7],
@@ -90,15 +59,19 @@ master_table = [[0, 1, 2, None, None],
                 [None, 5, 7, 6, 0]]
 
 
-source = 0
-myobject =  BellmanFord()
-result0 = myobject.singleSourceShortestPath( master_table,0 )
-result1 = myobject.singleSourceShortestPath( master_table, 1 )
-result2 = myobject.singleSourceShortestPath( master_table, 2 )
-result3 = myobject.singleSourceShortestPath( master_table, 3 )
-result4 = myobject.singleSourceShortestPath( master_table, 4 )
-#print(result0)
-# print(result1)
-# print(result2)
-# print(result3)
-# print(result4)
+result1 = bellman_ford(master_table, 0)
+time.sleep(5)
+result2 = bellman_ford(master_table, 1)
+time.sleep(5)
+result3 = bellman_ford(master_table, 2)
+time.sleep(5)
+result4 = bellman_ford(master_table, 3)
+time.sleep(5)
+result5 = bellman_ford(master_table, 4)
+time.sleep(5)
+
+final_result = [result1[1], result2[1], result3[1], result4[1], result5[1]]
+
+print("\nThe final solution to the problem is:")
+for items in final_result:
+    print items
