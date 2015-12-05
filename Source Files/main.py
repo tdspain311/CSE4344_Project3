@@ -10,6 +10,7 @@ References: Page 371-379 from the book
 import random
 import string
 import time
+from socket import *
 
 #GLOBAL VARS
 TABLE = []
@@ -48,6 +49,9 @@ def init():
 
     CreateHostTable()
 
+    print "\n\n=================="
+    print "::BUILDING TABLE::"
+    print "==================\n"
     
     finalTable1 = DVR_init_(addressList[0], 0)
     time.sleep(1)
@@ -59,15 +63,9 @@ def init():
     time.sleep(1)
     finalTable5 = DVR_init_(addressList[4], 4)
 
-    #temp = []
-    #temp = addressList[0]
-
         
     result = [finalTable1[1], finalTable2[1], finalTable3[1], finalTable4[1], finalTable5[1]]
     result2 = [finalTable1[0], finalTable2[0], finalTable3[0], finalTable4[0], finalTable5[0]]
-
-    #TABLE = result
-    #print TABLE
 
     print "\nIndex Table"
     print "====================================="
@@ -78,10 +76,6 @@ def init():
     PrintFormatedTable(result)
 
 def DVR_init_(addr_, source):
-
-    print "\n\n================"
-    print "::BUILDING TABLE::"
-    print "================\n"
     # auxiliary constants
     DISTANCE
     SIZE = len( DISTANCE )
@@ -321,6 +315,32 @@ def GetIP(numNodes_):
 
     return ipList
 
+def GetPortNumbers(numNodes_):
+    host = HOST[0]
+    if host == TABLE[0][0]:
+        # If the host is node A, create host socket with ports 12000,12002
+        serverSocket = socket(AF_INET, SOCK_DGRAM)
+        #serverSocket2 = socket(AF_INET, SOCK_DGRAM)
+        serverSocket.bind((host,12000))
+        #serverSocket2.bind((host,12002))
+        while True:
+            message, address = serverSocket.recvfrom(1024)
+            #message, address = serverSocket2.recvfrom(1024)
+        serverSocket.close()
+        #serverSocket2.close()
+        
+    if host == TABLE[1][0]:
+        # If the host is node B, create host socket with port 12001
+        serverSocket = socket(AF_INET, SOCK_DGRAM)
+        serverSocket.bind((host, 12001))
+        message, address = serverSocket.recvfrom(1024)
+        serverSocket.close()
+    if host == TABLE[2][0]:
+        # If the host is node C, create host socket with port 12003
+        serverSocket = socket(AF_INET, SOCK_DGRAM)
+        serverSocket.bind((host, 12003))
+        message, address = serverSocket.recvfrom(1024)
+        serverSocket.close()
 def main():
     """
     Main function, should initialize to get user to enter all nodes into table
@@ -328,6 +348,9 @@ def main():
     DVR algorithm to create a complete table
     """
     init()
+    PORTS = range(12000,12013)
+    
+    GetPortNumbers(5)
     pass
 
 # Invoke the main function here
